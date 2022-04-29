@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <a href="/cars">Delete/update</a>
+    <a href="/admin">Admin</a>
+    <br>
+    <label>Model:
+        <input type="text" name="model" id="model">
+    </label>
+    <br>
+    <label>
+        Rok:
+        <select name="rok" id="rok">
+            <option value="1998">1998</option>
+            <option value="1999">1999</option>
+            <option value="2000">2000</option>
+            <option value="2001">2001</option>
+            <option value="2002">2002</option>
+        </select>
+    </label>
+    <br>
+    <label>
+        Poduszki powietrzne: kierowca | pasażer | tylna kanapa | boczne z tyłu
+        <input type="checkbox" name="kierowca" id="kierowca">
+        <input type="checkbox" name="pasazer "id="pasazer">
+        <input type="checkbox" name="kanapa" id="kanapa">
+        <input type="checkbox" name="boczne" id="boczne">
+    </label>
+    <br>
+    <label>
+        Kolor:
+        <input type="color" id="color">
+    </label>
+    <br>
+    <button id="submit">Submit</button>
+    <script>
+        document.getElementById("submit").onclick = async () => {
+            let json = await fetchPostAsync()
+            //console.log(json)
+            alert(JSON.stringify(json, null, 5))
+        }
+        fetchPostAsync = async () => {
+            const data = JSON.stringify({
+                model: document.getElementById("model").value,
+                rok: document.getElementById("rok").value,
+                poduszki: [
+                    {description: "kierowca", value: document.getElementById("kierowca").checked},
+                    {description: "pasażer", value: document.getElementById("pasazer").checked},
+                    {description: "kanapa", value: document.getElementById("kanapa").checked},
+                    {description: "boczne", value: document.getElementById("boczne").checked},
+                ],
+                kolor: document.getElementById("color").value
+            })
+            //console.log(data)
+            const options = { method: "POST", body: data };
+            let response = await fetch("/add", options)
+            if (!response.ok) {
+                return response.status
+            }else {
+                return await response.json()
+            }
+        }
+        // response.json
+    </script>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        td {
+            border: 2px solid black;
+            height: 50px;
+            min-width: 100px;
+            text-align: center;
+        }
+        #main {
+            position: absolute;
+        }
+        .d1 {
+            position: absolute;
+            top: 40vh;
+            left: 35vw;
+            height: 20vh;
+            width: 30vw;
+            background: rgba(128, 128, 128, 0.99);
+            border: 2px solid black;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="main"></div>
+    <a href="/">Index</a>
+    <a href="/admin">Admin</a>
+    <table id="tab"></table>
+    <script>
+        document.body.onload = async () => {
+            let json = await fetchPostAsync()
+            generate(json)
+        }
+        fetchPostAsync = async () => {
+            const data = JSON.stringify({})
+            //console.log(data)
+            const options = { method: "POST", body: data };
+            let response = await fetch("/json", options)
+            if (!response.ok) {
+                return response.status
+            }else {
+                return await response.json()
+            }
+        }
+        generate = (json) => {
+            document.getElementById("tab").innerHTML = ""
+            for (a of Object.keys(json)){
+                let element = JSON.parse(json[a])
+                let tr = document.createElement("tr")
+                let td1 = document.createElement("td")
+                td1.innerHTML = element["id"]
+                let td2 = document.createElement("td")
+                td2.innerHTML = element["uuid"]
+                let td3 = document.createElement("td")
+                td3.innerHTML = element["model"]
+                let td4 = document.createElement("td")
+                td4.innerHTML = element["rok"]
+                let td5 = document.createElement("td")
+                let poduszki = ""
+                for (a of element["poduszki"]){
+                    poduszki += a["description"] + ": " + a["value"] + "<br>"
+                }
+                //console.log(poduszki)
+                td5.innerHTML = poduszki
+                let td6 = document.createElement("td")
+                td6.style.background = element["kolor"]
+                let td7 = document.createElement("td")
+                let btEdit = document.createElement("button")
+                btEdit.innerHTML = "edit"
+                td7.append(btEdit)
+                btEdit.onclick = () => {
+                    let div = document.createElement("div")
+                    div.innerHTML = "<input type='text' id='m1'> <br> <select name='rok' id='r1'><option value='1998'>1998</option><option value='1999'>1999</option><option value='2000'>2000</option><option value='2001'>2001</option><option value='2002'>2002</option></select><br>"
+                    let submit = document.createElement("button")
+                    submit.innerHTML = "submit"
+                    let cancel = document.createElement("button")
+                    cancel.innerHTML = "cancel"
+                    div.append(submit, cancel)
+                    div.classList.add("d1")
+                    document.getElementById("main").append(div)
+                    document.getElementById("m1").value = element["model"]
+                    document.getElementById("r1").value = element["rok"]
+                    cancel.onclick = () => {document.getElementById("main").innerHTML = ""}
+                    submit.onclick = async () => {
+                        let json1 = await edit(element["uuid"], document.getElementById("m1").value, document.getElementById("r1").value)
+                        generate(json1)
+                        document.getElementById("main").innerHTML = ""
+                    }
+                }
+                let td8 = document.createElement("td")
+                let btDelete = document.createElement("button")
+                btDelete.innerHTML = "delete"
+                td8.append(btDelete)
+                btDelete.onclick = async() => {
+                    let json1 = await btDel(element["uuid"])
+                    //let json = await fetchPostAsync()
+                    generate(json1)
+                }
+                tr.append(td1, td2, td3, td4, td5, td6, td7, td8)
+                document.getElementById("tab").append(tr)
+            }
+            edit = async (uuid, model, rok) => {
+                const data = JSON.stringify({
+                    "uuid": uuid,
+                    "model": model,
+                    "rok": rok
+                })
+                //console.log(data)
+                const options = { method: "POST", body: data };
+                let response = await fetch("/update", options)
+                if (!response.ok) {
+                    return response.status
+                }else {
+                    return await response.json()
+                }
+            }
+            btDel = async(uuid) => {
+                const data = JSON.stringify({
+                    "uuid": uuid
+                })
+                //console.log(data)
+                const options = { method: "POST", body: data };
+                let response = await fetch("/delete", options)
+                if (!response.ok) {
+                    return response.status
+                }else {
+                    return response.json()
+                }
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        td {
+            border: 2px solid black;
+            height: 50px;
+            min-width: 100px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <a href="/index">index</a>
+    <a href="/cars">delete/update</a>
+    <button id="generuj">Generuj losowo bazę samochodów</button>
+    <table id="tab"></table>
+    <script>
+        document.getElementById("generuj").onclick = async () => {
+            let json = await generujLosowo()
+            generate(json)
+        }
+        generujLosowo = async () => {
+            const data = JSON.stringify({})
+            //console.log(data)
+            const options = { method: "POST", body: data };
+            let response = await fetch("/losowo", options)
+            if (!response.ok) {
+                return response.status
+            }else {
+                return await response.json()
+            }
+        }
+        document.body.onload = async () => {
+            let json = await fetchPostAsync()
+            generate(json)
+        }
+        fetchPostAsync = async () => {
+            const data = JSON.stringify({})
+            //console.log(data)
+            const options = { method: "POST", body: data };
+            let response = await fetch("/json", options)
+            if (!response.ok) {
+                return response.status
+            }else {
+                return await response.json()
+            }
+        }
+        generate = (json) => {
+            document.getElementById("tab").innerHTML = ""
+            for (a of Object.keys(json)){
+                let element = JSON.parse(json[a])
+                let tr = document.createElement("tr")
+                let td1 = document.createElement("td")
+                td1.innerHTML = element["id"]
+                let td2 = document.createElement("td")
+                td2.innerHTML = element["uuid"]
+                let td3 = document.createElement("td")
+                td3.innerHTML = element["model"]
+                let td4 = document.createElement("td")
+                td4.innerHTML = element["rok"]
+                let td5 = document.createElement("td")
+                let poduszki = ""
+                for (a of element["poduszki"]){
+                    dane = JSON.stringify(a).replace(/\{/g, "").replace(/\}/g, "").replace(/\"/g, "")
+                    poduszki += dane + "<br>"
+                }
+                td5.innerHTML = poduszki
+                let td6 = document.createElement("td")
+                td6.style.background = element["kolor"]
+                let td7 = document.createElement("td")
+                let gen = document.createElement("button")
+                gen.innerHTML = "generuj fakturę VAT"
+                td7.append(gen)
+                gen.onclick = async () => {
+                    let json = await faktura(element["uuid"])
+                    generate(json)
+                }
+                let td8 = document.createElement("td")
+                if (element["faktura"] == true){
+                    td8.innerHTML = "<a href='#'> Pobierz </a>"
+                }
+                tr.append(td1, td2, td3, td4, td5, td6, td7, td8)
+                document.getElementById("tab").append(tr)
+            }
+        }
+        faktura = async (uuid) => {
+            const data = JSON.stringify({
+                uuid: uuid
+            })
+            //console.log(data)
+            const options = { method: "POST", body: data };
+            let response = await fetch("/faktura", options)
+            if (!response.ok) {
+                return response.status
+            }else {
+                return await response.json()
+            }
+        }
+    </script>
+</body>
+</html>
